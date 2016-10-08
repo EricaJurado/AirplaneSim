@@ -1,31 +1,25 @@
 using System;
 using System.Collections.Generic;
 
-struct plane
+public struct plane
 {
     public int ID; //ID # of plane
-    public string airline;
-}
+    public string airline; //name of airline
 
-struct myQueue
-{
-    int numQueue; //# of planes in queue
-    int front; //front of queue
-    int rear; //rear of queue
 }
 
 public enum planeAction {arrive, depart};
 
-class AirplaneSim
+class Runway
 {
-    public static Random rand = new Random();
     public static Queue<plane> landingQ = new Queue<plane>();
     public static Queue<plane> takeOffQ = new Queue<plane>();
+    public static Random rand = new Random();
     public static int planesProcesed=0;
-    public static int currentTime;
-    public static int evenTakeOffID=1;
-    public static int oddLandingID=0;
-    public static planeAction.depart depart;
+    public static int currentTime=12*60; //simulation starts at noon
+    public static int timePassed=0;
+    public static int takeOffID=0;
+    public static int landingID=1;
 
     public static void Main ()
     {
@@ -33,9 +27,17 @@ class AirplaneSim
         int numIncomingArrival = randomGenerator();
         int numTransToTakeOff = randomGenerator();
 
-        for (int counter=numIncomingArrival; counter>=0; counter--) {
-            NewPlane(depart);
+        for (int counterArrive=numIncomingArrival; counterArrive>0; counterArrive--) {
+            NewPlane(planeAction.arrive);
         }
+
+        for (int counterDepart=numTransToTakeOff; counterDepart>0; counterDepart--) {
+            NewPlane(planeAction.depart);
+        }
+
+        Console.WriteLine("The time is: " + Time());
+        Console.WriteLine("There are " + landingQ.Count + "planes waiting to land.");
+        Console.WriteLine("There are " + takeOffQ.Count + "planes waiting to takeoff.");
     }
 
     static int randomGenerator()
@@ -44,19 +46,25 @@ class AirplaneSim
         return num;
     }
 
-    void NewPlane (planeAction act) {
-        plane p;
-        planesProcesed ++;
-        p.ID=planesProcesed;
-        switch(act){
-            case planeAction.arrive:
-                Console.WriteLine("Plane ready to land");
-                landingQ.Enqueue(p);
-                break;
-            case planeAction.depart:
-                Console.WriteLine("Plane ready to take off");
-                takeOffQ.Enqueue(p);
-                break;
+    public static void NewPlane (planeAction action) {
+        plane newPlane = new plane();
+        newPlane.ID=planesProcesed;
+
+        if (action == planeAction.arrive) {
+            newPlane.ID = landingID;
+            landingID +=2;
+            landingQ.Enqueue(newPlane);
+        } else if (action == planeAction.depart) {
+            takeOffQ.Enqueue(newPlane);
+            newPlane.ID = takeOffID;
+            takeOffID +=2;
         }
+
+        planesProcesed ++;
+
+    }
+
+    public static string Time(){
+        return TimeSpan.FromMinutes(currentTime).ToString(@"hh\:mm");
     }
 }
